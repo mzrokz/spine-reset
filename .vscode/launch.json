@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "Flutter (Emulator)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "flutter emulator"
+    },
+    {
+      "name": "Flutter (Physical Device)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "flutter"
+    }
+  ]
+}
