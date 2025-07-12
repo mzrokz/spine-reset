@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/widgets.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -11,8 +10,8 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
-  Duration defaultDuration = const Duration(minutes: 30);
-  Duration remainingTime = const Duration(minutes: 30);
+  static Duration defaultDuration = const Duration(minutes: 30);
+  Duration remainingTime = defaultDuration;
 
   @override
   void initState() {
@@ -91,7 +90,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     });
   }
 
-  void resetTimer() {
+  void resetTimer() async {
+    await _loadSavedDuration();
     setState(() {
       timer?.cancel();
       remainingTime = defaultDuration;
@@ -118,16 +118,17 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
             icon: const Icon(Icons.settings),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
-              _loadSavedDuration();
+              if (!isRunning &&
+                  remainingTime.inSeconds == defaultDuration.inSeconds) {
+                _loadSavedDuration();
+              }
             },
           ),
         ],
       ),
       body: GestureDetector(
         onTap: () {
-          if (isRunning) {
-            stopTimer();
-          } else {
+          if (!isRunning || isPaused) {
             startTimer();
           }
         },
@@ -137,7 +138,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
             children: [
               Text(
                 formatTime(remainingTime),
-                style: const TextStyle(fontSize: 48),
+                style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.25),
               ),
               if (isRunning || isPaused)
                 Row(
