@@ -10,7 +10,7 @@
       "name": "Flutter (Emulator)",
       "request": "launch",
       "type": "dart",
-      "deviceId": "flutter emulator"
+      "deviceId": "emulator-5554"
     },
     {
       "name": "Flutter (Physical Device)",
