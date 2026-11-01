@@ -160,6 +160,10 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       ),
       body: GestureDetector(
         onTap: () {
+          if (remainingTime.inSeconds == 0) {
+            resetTimer();
+            return; // Reset if time is up
+          }
           if (!isRunning || isPaused) {
             startTimer();
           }
