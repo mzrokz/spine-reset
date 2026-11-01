@@ -215,9 +215,10 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
   String formatTime(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = duration.inHours;
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
+    return hours > 0 ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
   }
 
   @override
@@ -253,10 +254,16 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                formatTime(remainingTime),
-                style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.25),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    formatTime(remainingTime),
+                    style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.25),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               _buildAdjustButtons(),
