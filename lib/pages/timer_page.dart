@@ -122,7 +122,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     });
   }
 
-  void resetTimer() async {
+  Future<void> resetTimer() async {
     await _loadSavedDuration();
     setState(() {
       timer?.cancel();
@@ -130,6 +130,56 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       isRunning = false;
       isPaused = false;
     });
+  }
+
+  Widget _buildControls() {
+    final timeUp = remainingTime.inSeconds == 0;
+    final IconData icon;
+    final String label;
+    final VoidCallback onPressed;
+
+    if (isPaused) {
+      icon = Icons.play_arrow;
+      label = 'Resume';
+      onPressed = resumeTimer;
+    } else if (isRunning) {
+      icon = Icons.pause;
+      label = 'Pause';
+      onPressed = pauseTimer;
+    } else {
+      icon = Icons.play_arrow;
+      label = 'Start';
+      onPressed = () async {
+        if (timeUp) await resetTimer();
+        startTimer();
+      };
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        FilledButton.icon(
+          icon: Icon(icon),
+          label: Text(label),
+          onPressed: onPressed,
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(160, 56),
+            textStyle: const TextStyle(fontSize: 20),
+          ),
+        ),
+        const SizedBox(width: 16),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.refresh),
+          label: const Text('Reset'),
+          onPressed:
+              isRunning || remainingTime != defaultDuration ? resetTimer : null,
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(140, 56),
+            textStyle: const TextStyle(fontSize: 20),
+          ),
+        ),
+      ],
+    );
   }
 
   String formatTime(Duration duration) {
@@ -177,26 +227,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                 style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.25),
               ),
-              if (isRunning || isPaused)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(isPaused ? Icons.play_arrow : Icons.pause),
-                      onPressed: () {
-                        if (isPaused) {
-                          resumeTimer();
-                        } else {
-                          pauseTimer();
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: resetTimer,
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 32),
+              _buildControls(),
               if (isRunning && remainingTime.inSeconds == 0)
                 const Text('Time\'s up!', style: TextStyle(fontSize: 24)),
             ],
