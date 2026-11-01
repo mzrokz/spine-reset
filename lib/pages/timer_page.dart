@@ -132,6 +132,37 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     });
   }
 
+  void adjustTime(int minutes) {
+    setState(() {
+      remainingTime += Duration(minutes: minutes);
+    });
+  }
+
+  Widget _buildAdjustButtons() {
+    const steps = [-5, -1, 1, 5, 10];
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final step in steps)
+          FilledButton.tonal(
+            // Don't let subtracting run the timer down to zero or below.
+            onPressed: step < 0 && remainingTime <= Duration(minutes: -step)
+                ? null
+                : () => adjustTime(step),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(64, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              textStyle: const TextStyle(fontSize: 18),
+            ),
+            child: Text(step > 0 ? '+$step' : '−${-step}'),
+          ),
+      ],
+    );
+  }
+
   Widget _buildControls() {
     final timeUp = remainingTime.inSeconds == 0;
     final IconData icon;
@@ -227,6 +258,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                 style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.25),
               ),
+              const SizedBox(height: 16),
+              _buildAdjustButtons(),
               const SizedBox(height: 32),
               _buildControls(),
               if (isRunning && remainingTime.inSeconds == 0)
