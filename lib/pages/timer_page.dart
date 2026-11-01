@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -10,6 +12,8 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
+  late final AudioPlayer _audioPlayer;
+  bool _audioInitialized = false;
   static Duration defaultDuration = const Duration(minutes: 30);
   Duration remainingTime = defaultDuration;
 
@@ -18,6 +22,19 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadSavedDuration();
+    _initAudioPlayer();
+  }
+
+  Future<void> _initAudioPlayer() async {
+    try {
+      // Ensure path_provider is initialized
+      await getTemporaryDirectory();
+      _audioPlayer = AudioPlayer();
+      _audioInitialized = true;
+    } catch (e) {
+      debugPrint('Audio player initialization failed: $e');
+      _audioInitialized = false;
+    }
   }
 
   @override
@@ -31,6 +48,9 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     timer?.cancel();
+    if (_audioInitialized) {
+      _audioPlayer.dispose();
+    }
     super.dispose();
   }
 
@@ -61,6 +81,18 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
             timer.cancel();
             isRunning = false;
             isPaused = false;
+            // Play alarm sound for 10 seconds
+            if (_audioInitialized) {
+              () async {
+                try {
+                  await _audioPlayer.play(AssetSource('sounds/alarm.mp3'));
+                  await Future.delayed(const Duration(seconds: 10));
+                  await _audioPlayer.stop();
+                } catch (e) {
+                  debugPrint('Audio playback failed: $e');
+                }
+              }();
+            }
           }
         });
       });
